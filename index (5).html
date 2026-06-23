@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UC Analytics Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #0f0f0e;
+  --ink-2: #3a3a37;
+  --ink-3: #72726c;
+  --ink-4: #a8a89f;
+  --paper: #f6f5f0;
+  --paper-2: #edecea;
+  --paper-3: #e3e2dc;
+  --line: rgba(15,15,14,0.1);
+  --line-2: rgba(15,15,14,0.06);
+  --accent: #1a6b3c;
+  --accent-light: #e8f4ed;
+  --accent-mid: #2d9e5f;
+  --warn: #8b3a0f;
+  --warn-light: #fdf0e8;
+  --blue: #1a3f6b;
+  --blue-light: #e8eef8;
+  --purple: #4a1a6b;
+  --purple-light: #f0e8f8;
+  --r: 6px;
+  --r-lg: 10px;
+  --font: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── Top bar ── */
+.topbar {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0 2rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--paper);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.logo span { color: var(--accent-mid); }
+.search-outer {
+  flex: 1;
+  max-width: 480px;
+  position: relative;
+}
+.search-outer svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+#searchInput {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--r);
+  color: var(--paper);
+  font-family: var(--font);
+  font-size: 13px;
+}
+#searchInput:focus { outline: none; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); }
+#searchInput::placeholder { color: rgba(246,245,240,0.35); }
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.add-btn:hover { background: var(--accent-mid); }
+
+/* ── Layout ── */
+.layout { display: flex; min-height: calc(100vh - 52px); }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--line);
+  padding: 1.5rem 0;
+  background: var(--paper);
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  overflow-y: auto;
+}
+.sidebar-section { margin-bottom: 1.5rem; }
+.sidebar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+  padding: 0 1rem;
+  margin-bottom: 4px;
+}
+.filter-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 1rem;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.1s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font);
+}
+.filter-item:hover { background: var(--paper-2); }
+.filter-item.active { color: var(--accent); font-weight: 500; background: var(--accent-light); }
+.filter-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-4);
+  background: var(--paper-3);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+.filter-item.active .filter-count { background: var(--accent-light); color: var(--accent); }
+
+/* ── Main ── */
+.main { flex: 1; padding: 1.75rem 2rem; min-width: 0; }
+.main-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 1.25rem; }
+.main-title { font-size: 15px; font-weight: 600; }
+.main-count { font-family: var(--mono); font-size: 11px; color: var(--ink-4); }
+
+/* ── Cards ── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 1rem 1.125rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  position: relative;
+}
+.card:hover { border-color: var(--line-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+.card-top { display: flex; align-items: flex-start; gap: 10px; }
+.type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.pill-sheet  { background: var(--accent-light);  color: var(--accent); }
+.pill-doc    { background: var(--blue-light);    color: var(--blue); }
+.pill-deck   { background: var(--warn-light);    color: var(--warn); }
+.pill-query  { background: var(--paper-2);       color: var(--ink-2); }
+.pill-other  { background: var(--purple-light);  color: var(--purple); }
+
+.card-name {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  flex: 1;
+  word-break: break-word;
+}
+.card-summary {
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+.card-summary.loading { font-style: italic; color: var(--ink-4); }
+
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.kw {
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 2px 7px;
+  background: var(--paper-2);
+  border-radius: 3px;
+  color: var(--ink-3);
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-2);
+  margin-top: auto;
+}
+.card-meta { font-size: 11px; color: var(--ink-4); font-family: var(--mono); }
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--accent-light);
+  background: var(--accent-light);
+  transition: background 0.1s;
+}
+.card-link:hover { background: #d4eadb; }
+.card-link svg { flex-shrink: 0; }
+
+.del-btn {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-4);
+  opacity: 0;
+  padding: 3px;
+  border-radius: 4px;
+  line-height: 1;
+  font-size: 14px;
+}
+.card:hover .del-btn { opacity: 1; }
+.del-btn:hover { background: #fde8e8; color: #a32d2d; }
+
+/* ── Empty ── */
+.empty {
+  grid-column: 1 / -1;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--ink-4);
+}
+.empty svg { margin-bottom: 12px; opacity: 0.3; }
+.empty p { font-size: 13px; }
+
+/* ── Add modal ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,15,14,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 1rem;
+  backdrop-filter: blur(2px);
+}
+.modal {
+  background: #fff;
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+.modal-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.modal-sub { font-size: 12px; color: var(--ink-3); margin-bottom: 1.25rem; }
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--ink-2); margin-bottom: 5px; }
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.field textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+.btn-cancel {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: transparent;
+  font-family: var(--font);
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--ink-2);
+}
+.btn-cancel:hover { background: var(--paper-2); }
+.btn-add {
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--r);
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-add:hover { background: var(--accent-mid); }
+.btn-add:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Config panel ── */
+.config-bar {
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 2rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--ink-3);
+  flex-wrap: wrap;
+}
+.config-bar input {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: #fff;
+  color: var(--ink);
+  width: 260px;
+}
+.config-bar input:focus { outline: none; border-color: var(--accent); }
+.config-label { font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ink-4);
+  flex-shrink: 0;
+}
+.status-dot.ok { background: var(--accent-mid); }
+.status-dot.warn { background: #e07b39; }
+#configStatus { font-size: 11px; color: var(--ink-4); }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .sidebar { display: none; }
+  .main { padding: 1rem; }
+  .topbar { padding: 0 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="logo">UC<span>/</span>analytics</div>
+  <div class="search-outer">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Search files, summaries, keywords…" oninput="handleSearch()">
+  </div>
+  <button class="add-btn" onclick="openModal()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    Add file
+  </button>
+</div>
+
+<!-- Config bar -->
+<div class="config-bar">
+  <span class="config-label">Apps Script URL</span>
+  <input type="text" id="scriptUrl" placeholder="Paste your deployed Apps Script web app URL here" oninput="saveConfig()">
+  <div class="status-dot" id="statusDot"></div>
+  <span id="configStatus">Not connected</span>
+  <span style="margin-left:auto;color:var(--ink-4);font-size:11px">Files auto-refresh every 6 hrs via Apps Script</span>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Type</div>
+      <button class="filter-item active" onclick="setFilter('all',this)">All files <span class="filter-count" id="cnt-all">0</span></button>
+      <button class="filter-item" onclick="setFilter('sheet',this)">Sheets <span class="filter-count" id="cnt-sheet">0</span></button>
+      <button class="filter-item" onclick="setFilter('doc',this)">Docs <span class="filter-count" id="cnt-doc">0</span></button>
+      <button class="filter-item" onclick="setFilter('deck',this)">Decks <span class="filter-count" id="cnt-deck">0</span></button>
+      <button class="filter-item" onclick="setFilter('query',this)">Queries <span class="filter-count" id="cnt-query">0</span></button>
+      <button class="filter-item" onclick="setFilter('other',this)">Other <span class="filter-count" id="cnt-other">0</span></button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-header">
+      <div class="main-title" id="mainTitle">All files</div>
+      <div class="main-count" id="mainCount"></div>
+    </div>
+    <div class="grid" id="grid">
+      <div class="empty">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <p>No files yet. Add a Drive link to get started.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add modal -->
+<div class="overlay" id="overlay" style="display:none" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">Add a file</div>
+    <div class="modal-sub">Paste a Google Drive link — a summary will be generated automatically.</div>
+
+    <div class="field">
+      <label>Google Drive link</label>
+      <input type="url" id="driveLink" placeholder="https://docs.google.com/…">
+    </div>
+    <div class="field">
+      <label>File name</label>
+      <input type="text" id="fileName" placeholder="e.g. AC Co-Pilot Analysis Q2">
+    </div>
+    <div class="field">
+      <label>Type</label>
+      <select id="fileType">
+        <option value="sheet">Sheet</option>
+        <option value="doc">Doc</option>
+        <option value="deck">Deck</option>
+        <option value="query">SQL Query</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Brief description (optional — helps the AI summarise better)</label>
+      <textarea id="fileHint" placeholder="e.g. Tracks spare parts revenue by city and category, updated weekly"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-add" id="addBtn" onclick="addFile()">Add file</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── State ── */
+let files = [];
+let activeFilter = 'all';
+let searchQuery = '';
+
+const STORAGE_KEY = 'uc_hub_files';
+const CONFIG_KEY  = 'uc_hub_script_url';
+
+/* ── Persist ── */
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(files)); }
+function load() {
+  try { files = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { files = []; }
+}
+
+function saveConfig() {
+  const url = document.getElementById('scriptUrl').value.trim();
+  localStorage.setItem(CONFIG_KEY, url);
+  updateConfigStatus(url);
+}
+function loadConfig() {
+  const url = localStorage.getItem(CONFIG_KEY) || '';
+  if(url) document.getElementById('scriptUrl').value = url;
+  updateConfigStatus(url);
+}
+function updateConfigStatus(url) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('configStatus');
+  if(url.startsWith('https://script.google.com')) {
+    dot.className = 'status-dot ok';
+    txt.textContent = 'Connected — summaries will auto-refresh';
+  } else if(url.length > 0) {
+    dot.className = 'status-dot warn';
+    txt.textContent = 'URL looks wrong';
+  } else {
+    dot.className = 'status-dot';
+    txt.textContent = 'Not connected (summaries generated locally via Gemini)';
+  }
+}
+
+/* ── Type helpers ── */
+function pillClass(type) {
+  return { sheet:'pill-sheet', doc:'pill-doc', deck:'pill-deck', query:'pill-query', other:'pill-other' }[type] || 'pill-other';
+}
+function pillLabel(type) {
+  return { sheet:'SHEET', doc:'DOC', deck:'DECK', query:'QUERY', other:'OTHER' }[type] || 'OTHER';
+}
+function fmtDate(ts) {
+  if(!ts) return '';
+  return new Date(ts).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+}
+
+/* ── Detect type from Drive URL ── */
+function detectType(url) {
+  if(url.includes('spreadsheets')) return 'sheet';
+  if(url.includes('document')) return 'doc';
+  if(url.includes('presentation')) return 'deck';
+  return 'other';
+}
+
+/* ── Gemini summary ── */
+const GEMINI_KEY_KEY = 'doc_hub_gemini_key';
+function getGeminiKey() { return localStorage.getItem(GEMINI_KEY_KEY) || ''; }
+
+async function generateSummary(file) {
+  const key = getGeminiKey();
+  if(!key) {
+    return { summary: 'No Gemini key found. Add it to enable auto-summaries.', keywords: [] };
+  }
+
+  const typeLabel = { sheet:'Google Sheet', doc:'Google Doc', deck:'Google Slides deck', query:'SQL query file', other:'file' }[file.type] || 'file';
+  const hint = file.hint ? `\nUser note: ${file.hint}` : '';
+  const prompt = `You are indexing files for an analytics team at Urban Company (a home services platform). Summarise this ${typeLabel} called "${file.name}" in 2 sentences — what it contains and who would use it.${hint}\n\nThen list 4-6 keyword tags (topics, metrics, or categories).\n\nRespond ONLY as JSON: {"summary":"...","keywords":["...","..."]}`;
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    return { summary: parsed.summary || '', keywords: parsed.keywords || [] };
+  } catch(e) {
+    return { summary: 'Summary failed: ' + e.message, keywords: [] };
+  }
+}
+
+/* ── Add file ── */
+async function addFile() {
+  const link = document.getElementById('driveLink').value.trim();
+  const name = document.getElementById('fileName').value.trim();
+  const type = document.getElementById('fileType').value;
+  const hint = document.getElementById('fileHint').value.trim();
+
+  if(!link || !name) { alert('Please fill in the link and file name.'); return; }
+
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating summary…';
+
+  const file = {
+    id: Date.now() + '-' + Math.random().toString(36).slice(2),
+    name, link, type, hint,
+    summary: 'Generating…',
+    keywords: [],
+    summaryDone: false,
+    added: Date.now(),
+    updated: Date.now()
+  };
+
+  files.unshift(file);
+  save();
+  renderAll();
+  closeModal();
+
+  const result = await generateSummary(file);
+  file.summary = result.summary;
+  file.keywords = result.keywords;
+  file.summaryDone = true;
+  save();
+  renderAll();
+
+  btn.disabled = false;
+  btn.textContent = 'Add file';
+}
+
+/* ── Delete ── */
+function deleteFile(id) {
+  files = files.filter(f => f.id !== id);
+  save();
+  renderAll();
+}
+
+/* ── Filter / search ── */
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  const titles = { all:'All files', sheet:'Sheets', doc:'Docs', deck:'Decks', query:'Queries', other:'Other' };
+  document.getElementById('mainTitle').textContent = titles[f] || 'All files';
+  renderAll();
+}
+function handleSearch() {
+  searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+  renderAll();
+}
+function matches(f) {
+  const filterOk = activeFilter === 'all' || f.type === activeFilter;
+  if(!filterOk) return false;
+  if(!searchQuery) return true;
+  return f.name.toLowerCase().includes(searchQuery)
+    || (f.summary||'').toLowerCase().includes(searchQuery)
+    || (f.keywords||[]).some(k => k.toLowerCase().includes(searchQuery))
+    || f.type.toLowerCase().includes(searchQuery);
+}
+
+/* ── Render ── */
+function renderAll() {
+  updateCounts();
+  renderGrid();
+}
+
+function updateCounts() {
+  const types = ['sheet','doc','deck','query','other'];
+  document.getElementById('cnt-all').textContent = files.length;
+  types.forEach(t => {
+    const el = document.getElementById('cnt-' + t);
+    if(el) el.textContent = files.filter(f => f.type === t).length;
+  });
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderGrid() {
+  const filtered = files.filter(matches);
+  const grid = document.getElementById('grid');
+
+  document.getElementById('mainCount').textContent = filtered.length + ' file' + (filtered.length !== 1 ? 's' : '');
+
+  if(filtered.length === 0) {
+    grid.innerHTML = `<div class="empty">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p>${files.length === 0 ? 'No files yet. Click <strong>Add file</strong> to get started.' : 'No files match your search.'}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(f => `
+    <div class="card">
+      <button class="del-btn" onclick="deleteFile('${f.id}')" title="Remove">✕</button>
+      <div class="card-top">
+        <span class="type-pill ${pillClass(f.type)}">${pillLabel(f.type)}</span>
+        <div class="card-name">${escHtml(f.name)}</div>
+      </div>
+      <div class="card-summary${f.summaryDone ? '' : ' loading'}">${escHtml(f.summary)}</div>
+      ${f.keywords && f.keywords.length ? `
+        <div class="keywords">
+          ${f.keywords.map(k => `<span class="kw">${escHtml(k)}</span>`).join('')}
+        </div>` : ''}
+      <div class="card-footer">
+        <span class="card-meta">${fmtDate(f.updated)}</span>
+        <a class="card-link" href="${escHtml(f.link)}" target="_blank" rel="noopener">
+          Open
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── Modal ── */
+function openModal() {
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('driveLink').value = '';
+  document.getElementById('fileName').value = '';
+  document.getElementById('fileType').value = 'sheet';
+  document.getElementById('fileHint').value = '';
+  document.getElementById('addBtn').disabled = false;
+  document.getElementById('addBtn').textContent = 'Add file';
+  setTimeout(() => document.getElementById('driveLink').focus(), 50);
+}
+function closeModal() { document.getElementById('overlay').style.display = 'none'; }
+function overlayClick(e) { if(e.target === document.getElementById('overlay')) closeModal(); }
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+/* ── Auto-detect type from URL ── */
+document.getElementById('driveLink').addEventListener('input', function() {
+  const detected = detectType(this.value);
+  if(detected !== 'other') document.getElementById('fileType').value = detected;
+});
+
+/* ── Apps Script sync (optional) ── */
+async function syncFromScript() {
+  const url = localStorage.getItem(CONFIG_KEY);
+  if(!url || !url.startsWith('https://script.google.com')) return;
+  try {
+    const res = await fetch(url + '?action=get');
+    const data = await res.json();
+    if(Array.isArray(data)) {
+      data.forEach(remote => {
+        const existing = files.find(f => f.id === remote.id);
+        if(existing) {
+          existing.summary = remote.summary || existing.summary;
+          existing.keywords = remote.keywords || existing.keywords;
+          existing.updated = remote.updated || existing.updated;
+          existing.summaryDone = true;
+        }
+      });
+      save();
+      renderAll();
+    }
+  } catch(e) { console.log('Sync skipped:', e.message); }
+}
+
+/* ── Init ── */
+load();
+loadConfig();
+renderAll();
+syncFromScript();
+setInterval(syncFromScript, 6 * 60 * 60 * 1000);
+</script>
+</body>
+</html>
