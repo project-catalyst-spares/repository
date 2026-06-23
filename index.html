@@ -364,7 +364,38 @@ body {
 
 
 
-/* ── Responsive ── */
+.field-warn {
+  font-size: 11px;
+  color: #854F0B;
+  background: #FAEEDA;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 4px;
+  display: none;
+}
+.field-warn.show { display: block; }
+.field-error {
+  font-size: 11px;
+  color: #A32D2D;
+  background: #FCEBEB;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 4px;
+  display: none;
+}
+.field-error.show { display: block; }
+.btn-danger {
+  padding: 7px 14px;
+  border: 1px solid #f5c6c6;
+  border-radius: var(--r);
+  background: #FCEBEB;
+  color: #A32D2D;
+  font-family: var(--font);
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: auto;
+}
+.btn-danger:hover { background: #f5c6c6; }
 @media (max-width: 640px) {
   .sidebar { display: none; }
   .main { padding: 1rem; }
@@ -430,11 +461,13 @@ body {
 
     <div class="field">
       <label>Google Drive link</label>
-      <input type="url" id="driveLink" placeholder="https://docs.google.com/…">
+      <input type="url" id="driveLink" placeholder="https://docs.google.com/…" oninput="checkDupeLink()">
+      <div class="field-error" id="linkError">This link already exists in the dashboard.</div>
     </div>
     <div class="field">
       <label>File name</label>
-      <input type="text" id="fileName" placeholder="e.g. AC Co-Pilot Analysis Q2">
+      <input type="text" id="fileName" placeholder="e.g. AC Co-Pilot Analysis Q2" oninput="checkDupeName()">
+      <div class="field-warn" id="nameWarn">A file with this name already exists — make sure this is a different file.</div>
     </div>
     <div class="field">
       <label>Type</label>
@@ -459,6 +492,52 @@ body {
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-add" id="addBtn" onclick="addFile()">Add file</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="overlay" id="editOverlay" style="display:none" onclick="editOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">Edit file</div>
+    <div class="modal-sub">Changes are saved to the shared dashboard.</div>
+
+    <input type="hidden" id="editId">
+
+    <div class="field">
+      <label>Google Drive link</label>
+      <input type="url" id="editLink" placeholder="https://docs.google.com/…" oninput="checkEditDupeLink()">
+      <div class="field-error" id="editLinkError">This link already exists on another file.</div>
+    </div>
+    <div class="field">
+      <label>File name</label>
+      <input type="text" id="editName" placeholder="e.g. AC Co-Pilot Analysis Q2" oninput="checkEditDupeName()">
+      <div class="field-warn" id="editNameWarn">Another file has this name — double-check this is intentional.</div>
+    </div>
+    <div class="field">
+      <label>Type</label>
+      <select id="editType">
+        <option value="sheet">Sheet</option>
+        <option value="doc">Doc</option>
+        <option value="deck">Deck</option>
+        <option value="form">Form</option>
+        <option value="query">SQL Query</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Summary</label>
+      <textarea id="editSummary"></textarea>
+    </div>
+    <div class="field">
+      <label>Keywords <span style="color:var(--ink-4);font-weight:400">(comma separated)</span></label>
+      <input type="text" id="editKeywords" placeholder="e.g. spares, revenue, city-wise, GMV">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="deleteFromEdit()">Delete file</button>
+      <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-add" id="editBtn" onclick="saveEdit()">Save changes</button>
     </div>
   </div>
 </div>
@@ -518,6 +597,13 @@ async function addFile() {
 
   if(!link || !name || !summary) {
     alert('Please fill in the link, name, and summary.');
+    return;
+  }
+
+  // Block duplicate link
+  if(files.some(f => f.link.trim() === link)) {
+    document.getElementById('linkError').classList.add('show');
+    document.getElementById('driveLink').focus();
     return;
   }
 
@@ -639,10 +725,13 @@ function renderGrid() {
       ${kws.length ? `<div class="keywords">${kws.map(k => `<button class="kw" onclick="searchByKeyword(this.textContent)">${escHtml(k)}</button>`).join('')}</div>` : ''}
       <div class="card-footer">
         <span class="card-meta">${fmtDate(f.updated)}</span>
-        <a class="card-link" href="${escHtml(f.link)}" target="_blank" rel="noopener">
-          Open
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        </a>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button onclick="openEditModal('${f.id}')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-3);cursor:pointer;font-family:var(--font)">Edit</button>
+          <a class="card-link" href="${escHtml(f.link)}" target="_blank" rel="noopener">
+            Open
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -657,6 +746,101 @@ function searchByKeyword(kw) {
   input.focus();
 }
 
+/* ── Duplicate checks (add modal) ── */
+function checkDupeLink() {
+  const val = document.getElementById('driveLink').value.trim();
+  const dupe = val && files.some(f => f.link.trim() === val);
+  document.getElementById('linkError').classList.toggle('show', dupe);
+}
+function checkDupeName() {
+  const val = document.getElementById('fileName').value.trim().toLowerCase();
+  const dupe = val && files.some(f => f.name.trim().toLowerCase() === val);
+  document.getElementById('nameWarn').classList.toggle('show', dupe);
+}
+
+/* ── Duplicate checks (edit modal) ── */
+function checkEditDupeLink() {
+  const val  = document.getElementById('editLink').value.trim();
+  const id   = document.getElementById('editId').value;
+  const dupe = val && files.some(f => f.id !== id && f.link.trim() === val);
+  document.getElementById('editLinkError').classList.toggle('show', dupe);
+}
+function checkEditDupeName() {
+  const val  = document.getElementById('editName').value.trim().toLowerCase();
+  const id   = document.getElementById('editId').value;
+  const dupe = val && files.some(f => f.id !== id && f.name.trim().toLowerCase() === val);
+  document.getElementById('editNameWarn').classList.toggle('show', dupe);
+}
+
+/* ── Edit modal ── */
+function openEditModal(id) {
+  const f = files.find(d => String(d.id) === String(id));
+  if(!f) return;
+  document.getElementById('editId').value       = f.id;
+  document.getElementById('editLink').value     = f.link || '';
+  document.getElementById('editName').value     = f.name || '';
+  document.getElementById('editSummary').value  = f.summary || '';
+  document.getElementById('editType').value     = normaliseType(f.type);
+  const kws = Array.isArray(f.keywords) ? f.keywords : (() => { try { return JSON.parse(f.keywords || '[]'); } catch(e) { return []; } })();
+  document.getElementById('editKeywords').value = kws.join(', ');
+  document.getElementById('editLinkError').classList.remove('show');
+  document.getElementById('editNameWarn').classList.remove('show');
+  document.getElementById('editBtn').disabled = false;
+  document.getElementById('editBtn').textContent = 'Save changes';
+  document.getElementById('editOverlay').style.display = 'flex';
+}
+function closeEditModal() { document.getElementById('editOverlay').style.display = 'none'; }
+function editOverlayClick(e) { if(e.target === document.getElementById('editOverlay')) closeEditModal(); }
+
+async function saveEdit() {
+  const id      = document.getElementById('editId').value;
+  const link    = document.getElementById('editLink').value.trim();
+  const name    = document.getElementById('editName').value.trim();
+  const type    = document.getElementById('editType').value;
+  const summary = document.getElementById('editSummary').value.trim();
+  const kwRaw   = document.getElementById('editKeywords').value.trim();
+
+  if(!link || !name || !summary) { alert('Please fill in link, name, and summary.'); return; }
+
+  // Block if duplicate link on another file
+  if(files.some(f => f.id !== id && f.link.trim() === link)) {
+    alert('This link already exists on another file. Please use a unique link.');
+    return;
+  }
+
+  const keywords = kwRaw ? kwRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
+  const btn = document.getElementById('editBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const payload = { id, name, link, type, summary, keywords, updated: Date.now() };
+    const url = SCRIPT_URL + '?action=update&data=' + encodeURIComponent(JSON.stringify(payload));
+    const res  = await fetch(url);
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Unknown error');
+    closeEditModal();
+    await fetchFiles();
+  } catch(e) {
+    alert('Could not save changes: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Save changes';
+  }
+}
+
+async function deleteFromEdit() {
+  const id = document.getElementById('editId').value;
+  if(!confirm('Delete this file from the dashboard?')) return;
+  closeEditModal();
+  try {
+    const url = SCRIPT_URL + '?action=delete&id=' + encodeURIComponent(id);
+    await fetch(url);
+    await fetchFiles();
+  } catch(e) {
+    alert('Could not delete: ' + e.message);
+  }
+}
+
 /* ── Modal ── */
 function openModal() {
   document.getElementById('overlay').style.display = 'flex';
@@ -665,13 +849,17 @@ function openModal() {
   document.getElementById('fileType').value = 'sheet';
   document.getElementById('fileSummary').value = '';
   document.getElementById('fileKeywords').value = '';
+  document.getElementById('linkError').classList.remove('show');
+  document.getElementById('nameWarn').classList.remove('show');
   document.getElementById('addBtn').disabled = false;
   document.getElementById('addBtn').textContent = 'Add file';
   setTimeout(() => document.getElementById('driveLink').focus(), 50);
 }
 function closeModal() { document.getElementById('overlay').style.display = 'none'; }
 function overlayClick(e) { if(e.target === document.getElementById('overlay')) closeModal(); }
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') { closeModal(); closeEditModal(); }
+});
 
 /* ── Auto-detect type from URL ── */
 document.getElementById('driveLink').addEventListener('input', function() {
