@@ -578,15 +578,25 @@ function handleSearch() {
   searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
   renderAll();
 }
+function normaliseType(raw) {
+  const r = (raw || '').toLowerCase().trim();
+  if(r === 'sheet' || r === 'sheets') return 'sheet';
+  if(r === 'doc' || r === 'docs' || r === 'document') return 'doc';
+  if(r === 'deck' || r === 'decks' || r === 'presentation') return 'deck';
+  if(r === 'form' || r === 'forms') return 'form';
+  if(r === 'query' || r === 'queries' || r === 'sql query' || r === 'sql') return 'query';
+  return 'other';
+}
 function matches(f) {
-  const filterOk = activeFilter === 'all' || f.type === activeFilter;
+  const ftype = normaliseType(f.type);
+  const filterOk = activeFilter === 'all' || ftype === activeFilter;
   if(!filterOk) return false;
   if(!searchQuery) return true;
-  const kws = Array.isArray(f.keywords) ? f.keywords : (typeof f.keywords === 'string' ? JSON.parse(f.keywords || '[]') : []);
+  const kws = Array.isArray(f.keywords) ? f.keywords : (typeof f.keywords === 'string' ? (() => { try { return JSON.parse(f.keywords || '[]'); } catch(e) { return []; } })() : []);
   return f.name.toLowerCase().includes(searchQuery)
     || (f.summary||'').toLowerCase().includes(searchQuery)
     || kws.some(k => k.toLowerCase().includes(searchQuery))
-    || f.type.toLowerCase().includes(searchQuery);
+    || ftype.includes(searchQuery);
 }
 
 /* ── Render ── */
@@ -599,7 +609,7 @@ function updateCounts() {
   document.getElementById('cnt-all').textContent = files.length;
   types.forEach(t => {
     const el = document.getElementById('cnt-' + t);
-    if(el) el.textContent = files.filter(f => f.type === t).length;
+    if(el) el.textContent = files.filter(f => normaliseType(f.type) === t).length;
   });
 }
 function renderGrid() {
@@ -616,12 +626,13 @@ function renderGrid() {
   }
 
   grid.innerHTML = filtered.map(f => {
+    const ftype = normaliseType(f.type);
     const kws = Array.isArray(f.keywords) ? f.keywords : (() => { try { return JSON.parse(f.keywords || '[]'); } catch(e) { return []; } })();
     return `
-    <div class="card" data-type="${f.type}">
+    <div class="card" data-type="${ftype}">
       <button class="del-btn" onclick="deleteFile('${f.id}')" title="Remove">✕</button>
       <div class="card-top">
-        <span class="type-pill ${pillClass(f.type)}">${pillLabel(f.type)}</span>
+        <span class="type-pill ${pillClass(ftype)}">${pillLabel(ftype)}</span>
         <div class="card-name">${escHtml(f.name)}</div>
       </div>
       <div class="card-summary">${escHtml(f.summary)}</div>
