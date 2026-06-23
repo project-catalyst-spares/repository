@@ -188,6 +188,14 @@ body {
 }
 .card:hover { border-color: var(--line-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
 
+/* ── Card background colors by type ── */
+.card[data-type="sheet"]  { background: #e8f5e9; border-color: #c8e6c9; }
+.card[data-type="doc"]    { background: #e3f2fd; border-color: #bbdefb; }
+.card[data-type="deck"]   { background: #fffde7; border-color: #fff59d; }
+.card[data-type="form"]   { background: #f3e5f5; border-color: #e1bee7; }
+.card[data-type="query"]  { background: #fff3e0; border-color: #ffe0b2; }
+.card[data-type="other"]  { background: #fff; }
+
 .card-top { display: flex; align-items: flex-start; gap: 10px; }
 .type-pill {
   display: inline-flex;
@@ -202,11 +210,12 @@ body {
   flex-shrink: 0;
   margin-top: 1px;
 }
-.pill-sheet  { background: var(--accent-light);  color: var(--accent); }
-.pill-doc    { background: var(--blue-light);    color: var(--blue); }
-.pill-deck   { background: var(--warn-light);    color: var(--warn); }
-.pill-query  { background: var(--paper-2);       color: var(--ink-2); }
-.pill-other  { background: var(--purple-light);  color: var(--purple); }
+.pill-sheet  { background: #a5d6a7; color: #1b5e20; }
+.pill-doc    { background: #90caf9; color: #0d47a1; }
+.pill-deck   { background: #fff176; color: #f57f17; }
+.pill-form   { background: #ce93d8; color: #4a148c; }
+.pill-query  { background: #ffcc80; color: #e65100; }
+.pill-other  { background: var(--paper-2); color: var(--ink-2); }
 
 .card-name {
   font-size: 13px;
@@ -231,10 +240,14 @@ body {
   font-size: 10px;
   font-family: var(--mono);
   padding: 2px 7px;
-  background: var(--paper-2);
+  background: rgba(0,0,0,0.07);
   border-radius: 3px;
-  color: var(--ink-3);
+  color: var(--ink-2);
+  cursor: pointer;
+  border: none;
+  transition: background 0.1s, color 0.1s;
 }
+.kw:hover { background: rgba(0,0,0,0.15); color: var(--ink); }
 
 .card-footer {
   display: flex;
@@ -387,6 +400,7 @@ body {
       <button class="filter-item" onclick="setFilter('sheet',this)">Sheets <span class="filter-count" id="cnt-sheet">0</span></button>
       <button class="filter-item" onclick="setFilter('doc',this)">Docs <span class="filter-count" id="cnt-doc">0</span></button>
       <button class="filter-item" onclick="setFilter('deck',this)">Decks <span class="filter-count" id="cnt-deck">0</span></button>
+      <button class="filter-item" onclick="setFilter('form',this)">Forms <span class="filter-count" id="cnt-form">0</span></button>
       <button class="filter-item" onclick="setFilter('query',this)">Queries <span class="filter-count" id="cnt-query">0</span></button>
       <button class="filter-item" onclick="setFilter('other',this)">Other <span class="filter-count" id="cnt-other">0</span></button>
     </div>
@@ -428,6 +442,7 @@ body {
         <option value="sheet">Sheet</option>
         <option value="doc">Doc</option>
         <option value="deck">Deck</option>
+        <option value="form">Form</option>
         <option value="query">SQL Query</option>
         <option value="other">Other</option>
       </select>
@@ -458,10 +473,10 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzN0g_ZRN1rdk5szyYxG
 
 /* ── Type helpers ── */
 function pillClass(type) {
-  return { sheet:'pill-sheet', doc:'pill-doc', deck:'pill-deck', query:'pill-query', other:'pill-other' }[type] || 'pill-other';
+  return { sheet:'pill-sheet', doc:'pill-doc', deck:'pill-deck', form:'pill-form', query:'pill-query', other:'pill-other' }[type] || 'pill-other';
 }
 function pillLabel(type) {
-  return { sheet:'SHEET', doc:'DOC', deck:'DECK', query:'QUERY', other:'OTHER' }[type] || 'OTHER';
+  return { sheet:'SHEET', doc:'DOC', deck:'DECK', form:'FORM', query:'QUERY', other:'OTHER' }[type] || 'OTHER';
 }
 function fmtDate(ts) {
   if(!ts) return '';
@@ -555,7 +570,7 @@ function setFilter(f, el) {
   activeFilter = f;
   document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
-  const titles = { all:'All files', sheet:'Sheets', doc:'Docs', deck:'Decks', query:'Queries', other:'Other' };
+  const titles = { all:'All files', sheet:'Sheets', doc:'Docs', deck:'Decks', form:'Forms', query:'Queries', other:'Other' };
   document.getElementById('mainTitle').textContent = titles[f] || 'All files';
   renderAll();
 }
@@ -580,7 +595,7 @@ function renderAll() {
   renderGrid();
 }
 function updateCounts() {
-  const types = ['sheet','doc','deck','query','other'];
+  const types = ['sheet','doc','deck','form','query','other'];
   document.getElementById('cnt-all').textContent = files.length;
   types.forEach(t => {
     const el = document.getElementById('cnt-' + t);
@@ -603,14 +618,14 @@ function renderGrid() {
   grid.innerHTML = filtered.map(f => {
     const kws = Array.isArray(f.keywords) ? f.keywords : (() => { try { return JSON.parse(f.keywords || '[]'); } catch(e) { return []; } })();
     return `
-    <div class="card">
+    <div class="card" data-type="${f.type}">
       <button class="del-btn" onclick="deleteFile('${f.id}')" title="Remove">✕</button>
       <div class="card-top">
         <span class="type-pill ${pillClass(f.type)}">${pillLabel(f.type)}</span>
         <div class="card-name">${escHtml(f.name)}</div>
       </div>
       <div class="card-summary">${escHtml(f.summary)}</div>
-      ${kws.length ? `<div class="keywords">${kws.map(k => `<span class="kw">${escHtml(k)}</span>`).join('')}</div>` : ''}
+      ${kws.length ? `<div class="keywords">${kws.map(k => `<button class="kw" onclick="searchByKeyword(this.textContent)">${escHtml(k)}</button>`).join('')}</div>` : ''}
       <div class="card-footer">
         <span class="card-meta">${fmtDate(f.updated)}</span>
         <a class="card-link" href="${escHtml(f.link)}" target="_blank" rel="noopener">
@@ -620,6 +635,15 @@ function renderGrid() {
       </div>
     </div>`;
   }).join('');
+}
+
+/* ── Keyword click search ── */
+function searchByKeyword(kw) {
+  const input = document.getElementById('searchInput');
+  input.value = kw.trim();
+  searchQuery = kw.trim().toLowerCase();
+  renderAll();
+  input.focus();
 }
 
 /* ── Modal ── */
