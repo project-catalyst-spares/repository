@@ -349,39 +349,7 @@ body {
 .btn-add:hover { background: var(--accent-mid); }
 .btn-add:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Config panel ── */
-.config-bar {
-  background: var(--paper-2);
-  border-bottom: 1px solid var(--line);
-  padding: 8px 2rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--ink-3);
-  flex-wrap: wrap;
-}
-.config-bar input {
-  padding: 5px 9px;
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  background: #fff;
-  color: var(--ink);
-  width: 260px;
-}
-.config-bar input:focus { outline: none; border-color: var(--accent); }
-.config-label { font-weight: 500; color: var(--ink-2); white-space: nowrap; }
-.status-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--ink-4);
-  flex-shrink: 0;
-}
-.status-dot.ok { background: var(--accent-mid); }
-.status-dot.warn { background: #e07b39; }
-#configStatus { font-size: 11px; color: var(--ink-4); }
+
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
@@ -406,14 +374,7 @@ body {
   </button>
 </div>
 
-<!-- Config bar -->
-<div class="config-bar">
-  <span class="config-label">Apps Script URL</span>
-  <input type="text" id="scriptUrl" placeholder="Paste your deployed Apps Script web app URL here" oninput="saveConfig()">
-  <div class="status-dot" id="statusDot"></div>
-  <span id="configStatus">Not connected</span>
-  <span style="margin-left:auto;color:var(--ink-4);font-size:11px">Files auto-refresh every 6 hrs via Apps Script</span>
-</div>
+
 
 <!-- Layout -->
 <div class="layout">
@@ -489,8 +450,10 @@ let files = [];
 let activeFilter = 'all';
 let searchQuery = '';
 
-const STORAGE_KEY = 'uc_hub_files';
-const CONFIG_KEY  = 'uc_hub_script_url';
+/* ── Config ── */
+const SCRIPT_URL  = 'https://script.google.com/a/macros/urbancompany.com/s/AKfycby7MpvcmkwrimIC85FZ__7NiWKZuryud7wUbVIaiiQesbbG88ORHfl-vQ5pIiVnOesx/exec';
+const GEMINI_KEY  = 'AQ.Ab8RN6KxyBdxr1XW3W1BCIS4t-FCb7WVGADFogHAYfp8hSngFQ';
+const GEMINI_MODEL = 'gemini-1.5-flash';
 
 /* ── Persist ── */
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(files)); }
@@ -498,30 +461,8 @@ function load() {
   try { files = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { files = []; }
 }
 
-function saveConfig() {
-  const url = document.getElementById('scriptUrl').value.trim();
-  localStorage.setItem(CONFIG_KEY, url);
-  updateConfigStatus(url);
-}
-function loadConfig() {
-  const url = localStorage.getItem(CONFIG_KEY) || '';
-  if(url) document.getElementById('scriptUrl').value = url;
-  updateConfigStatus(url);
-}
-function updateConfigStatus(url) {
-  const dot = document.getElementById('statusDot');
-  const txt = document.getElementById('configStatus');
-  if(url.startsWith('https://script.google.com')) {
-    dot.className = 'status-dot ok';
-    txt.textContent = 'Connected — summaries will auto-refresh';
-  } else if(url.length > 0) {
-    dot.className = 'status-dot warn';
-    txt.textContent = 'URL looks wrong';
-  } else {
-    dot.className = 'status-dot';
-    txt.textContent = 'Not connected (summaries generated locally via Gemini)';
-  }
-}
+
+
 
 /* ── Type helpers ── */
 function pillClass(type) {
@@ -544,13 +485,9 @@ function detectType(url) {
 }
 
 /* ── Gemini summary ── */
-const GEMINI_KEY_KEY = 'doc_hub_gemini_key';
-function getGeminiKey() { return localStorage.getItem(GEMINI_KEY_KEY) || ''; }
-
 async function generateSummary(file) {
-  const key = getGeminiKey();
-  if(!key) {
-    return { summary: 'No Gemini key found. Add it to enable auto-summaries.', keywords: [] };
+  if (!GEMINI_KEY) {
+    return { summary: 'No Gemini key configured.', keywords: [] };
   }
 
   const typeLabel = { sheet:'Google Sheet', doc:'Google Doc', deck:'Google Slides deck', query:'SQL query file', other:'file' }[file.type] || 'file';
@@ -558,7 +495,7 @@ async function generateSummary(file) {
   const prompt = `You are indexing files for an analytics team at Urban Company (a home services platform). Summarise this ${typeLabel} called "${file.name}" in 2 sentences — what it contains and who would use it.${hint}\n\nThen list 4-6 keyword tags (topics, metrics, or categories).\n\nRespond ONLY as JSON: {"summary":"...","keywords":["...","..."]}`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(GEMINI_KEY)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -722,10 +659,9 @@ document.getElementById('driveLink').addEventListener('input', function() {
 
 /* ── Apps Script sync (optional) ── */
 async function syncFromScript() {
-  const url = localStorage.getItem(CONFIG_KEY);
-  if(!url || !url.startsWith('https://script.google.com')) return;
+  if (!SCRIPT_URL) return;
   try {
-    const res = await fetch(url + '?action=get');
+    const res = await fetch(SCRIPT_URL + '?action=get');
     const data = await res.json();
     if(Array.isArray(data)) {
       data.forEach(remote => {
@@ -745,7 +681,6 @@ async function syncFromScript() {
 
 /* ── Init ── */
 load();
-loadConfig();
 renderAll();
 syncFromScript();
 setInterval(syncFromScript, 6 * 60 * 60 * 1000);
