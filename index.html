@@ -412,7 +412,7 @@ body {
 <div class="overlay" id="overlay" style="display:none" onclick="overlayClick(event)">
   <div class="modal">
     <div class="modal-title">Add a file</div>
-    <div class="modal-sub">Paste a Google Drive link — a summary will be generated automatically.</div>
+    <div class="modal-sub">Paste a Google Drive link and write a short summary. This will be visible to everyone.</div>
 
     <div class="field">
       <label>Google Drive link</label>
@@ -433,8 +433,12 @@ body {
       </select>
     </div>
     <div class="field">
-      <label>Brief description (optional — helps the AI summarise better)</label>
-      <textarea id="fileHint" placeholder="e.g. Tracks spare parts revenue by city and category, updated weekly"></textarea>
+      <label>Summary <span style="color:var(--ink-4);font-weight:400">(what's in this file and who should use it)</span></label>
+      <textarea id="fileSummary" placeholder="e.g. Tracks spare parts revenue by city and category. Used by the sourcing and ops teams for weekly reviews."></textarea>
+    </div>
+    <div class="field">
+      <label>Keywords <span style="color:var(--ink-4);font-weight:400">(comma separated)</span></label>
+      <input type="text" id="fileKeywords" placeholder="e.g. spares, revenue, city-wise, GMV">
     </div>
 
     <div class="modal-actions">
@@ -450,19 +454,7 @@ let files = [];
 let activeFilter = 'all';
 let searchQuery = '';
 
-/* ── Config ── */
-const SCRIPT_URL  = 'https://script.google.com/a/macros/urbancompany.com/s/AKfycby7MpvcmkwrimIC85FZ__7NiWKZuryud7wUbVIaiiQesbbG88ORHfl-vQ5pIiVnOesx/exec';
-const GEMINI_KEY  = 'AQ.Ab8RN6IR7YuHAG9DbzmaIoia-jregAb7uAY7G_Tn4f6VevtsCQ';
-const GEMINI_MODEL = 'gemini-1.5-flash';
-
-/* ── Persist ── */
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(files)); }
-function load() {
-  try { files = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { files = []; }
-}
-
-
-
+const SCRIPT_URL = 'https://script.google.com/a/macros/urbancompany.com/s/AKfycby7MpvcmkwrimIC85FZ__7NiWKZuryud7wUbVIaiiQesbbG88ORHfl-vQ5pIiVnOesx/exec';
 
 /* ── Type helpers ── */
 function pillClass(type) {
@@ -473,88 +465,93 @@ function pillLabel(type) {
 }
 function fmtDate(ts) {
   if(!ts) return '';
-  return new Date(ts).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  return new Date(Number(ts)).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
 }
-
-/* ── Detect type from Drive URL ── */
 function detectType(url) {
   if(url.includes('spreadsheets')) return 'sheet';
   if(url.includes('document')) return 'doc';
   if(url.includes('presentation')) return 'deck';
   return 'other';
 }
-
-/* ── Gemini summary ── */
-async function generateSummary(file) {
-  if (!GEMINI_KEY) {
-    return { summary: 'No Gemini key configured.', keywords: [] };
-  }
-
-  const typeLabel = { sheet:'Google Sheet', doc:'Google Doc', deck:'Google Slides deck', query:'SQL query file', other:'file' }[file.type] || 'file';
-  const hint = file.hint ? `\nUser note: ${file.hint}` : '';
-  const prompt = `You are indexing files for an analytics team at Urban Company (a home services platform). Summarise this ${typeLabel} called "${file.name}" in 2 sentences — what it contains and who would use it.${hint}\n\nThen list 4-6 keyword tags (topics, metrics, or categories).\n\nRespond ONLY as JSON: {"summary":"...","keywords":["...","..."]}`;
-
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(GEMINI_KEY)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
-    const data = await res.json();
-    if(data.error) throw new Error(data.error.message);
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const clean = raw.replace(/```json|```/g,'').trim();
-    const parsed = JSON.parse(clean);
-    return { summary: parsed.summary || '', keywords: parsed.keywords || [] };
-  } catch(e) {
-    return { summary: 'Summary failed: ' + e.message, keywords: [] };
-  }
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* ── Add file ── */
+/* ── Apps Script: fetch all files ── */
+async function fetchFiles() {
+  setLoading(true);
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=get');
+    const data = await res.json();
+    if(Array.isArray(data)) {
+      files = data;
+      renderAll();
+    }
+  } catch(e) {
+    console.error('Could not load files:', e.message);
+  }
+  setLoading(false);
+}
+
+/* ── Apps Script: add a file ── */
 async function addFile() {
-  const link = document.getElementById('driveLink').value.trim();
-  const name = document.getElementById('fileName').value.trim();
-  const type = document.getElementById('fileType').value;
-  const hint = document.getElementById('fileHint').value.trim();
+  const link    = document.getElementById('driveLink').value.trim();
+  const name    = document.getElementById('fileName').value.trim();
+  const type    = document.getElementById('fileType').value;
+  const summary = document.getElementById('fileSummary').value.trim();
+  const kwRaw   = document.getElementById('fileKeywords').value.trim();
 
-  if(!link || !name) { alert('Please fill in the link and file name.'); return; }
+  if(!link || !name || !summary) {
+    alert('Please fill in the link, name, and summary.');
+    return;
+  }
 
+  const keywords = kwRaw ? kwRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
   const btn = document.getElementById('addBtn');
   btn.disabled = true;
-  btn.textContent = 'Generating summary…';
+  btn.textContent = 'Saving…';
 
-  const file = {
-    id: Date.now() + '-' + Math.random().toString(36).slice(2),
-    name, link, type, hint,
-    summary: 'Generating…',
-    keywords: [],
-    summaryDone: false,
-    added: Date.now(),
-    updated: Date.now()
-  };
-
-  files.unshift(file);
-  save();
-  renderAll();
-  closeModal();
-
-  const result = await generateSummary(file);
-  file.summary = result.summary;
-  file.keywords = result.keywords;
-  file.summaryDone = true;
-  save();
-  renderAll();
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'add',
+        id: Date.now() + '-' + Math.random().toString(36).slice(2),
+        name, link, type, summary, keywords,
+        added: Date.now(),
+        updated: Date.now()
+      })
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Unknown error');
+    closeModal();
+    await fetchFiles();
+  } catch(e) {
+    alert('Could not save file: ' + e.message);
+  }
 
   btn.disabled = false;
   btn.textContent = 'Add file';
 }
 
-/* ── Delete ── */
-function deleteFile(id) {
-  files = files.filter(f => f.id !== id);
-  save();
-  renderAll();
+/* ── Apps Script: delete a file ── */
+async function deleteFile(id) {
+  if(!confirm('Remove this file from the dashboard?')) return;
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'delete', id })
+    });
+    await fetchFiles();
+  } catch(e) {
+    alert('Could not delete: ' + e.message);
+  }
+}
+
+/* ── Loading state ── */
+function setLoading(on) {
+  const grid = document.getElementById('grid');
+  if(on) grid.innerHTML = `<div class="empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><p>Loading files…</p></div>`;
 }
 
 /* ── Filter / search ── */
@@ -574,9 +571,10 @@ function matches(f) {
   const filterOk = activeFilter === 'all' || f.type === activeFilter;
   if(!filterOk) return false;
   if(!searchQuery) return true;
+  const kws = Array.isArray(f.keywords) ? f.keywords : (typeof f.keywords === 'string' ? JSON.parse(f.keywords || '[]') : []);
   return f.name.toLowerCase().includes(searchQuery)
     || (f.summary||'').toLowerCase().includes(searchQuery)
-    || (f.keywords||[]).some(k => k.toLowerCase().includes(searchQuery))
+    || kws.some(k => k.toLowerCase().includes(searchQuery))
     || f.type.toLowerCase().includes(searchQuery);
 }
 
@@ -585,7 +583,6 @@ function renderAll() {
   updateCounts();
   renderGrid();
 }
-
 function updateCounts() {
   const types = ['sheet','doc','deck','query','other'];
   document.getElementById('cnt-all').textContent = files.length;
@@ -594,15 +591,9 @@ function updateCounts() {
     if(el) el.textContent = files.filter(f => f.type === t).length;
   });
 }
-
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function renderGrid() {
   const filtered = files.filter(matches);
   const grid = document.getElementById('grid');
-
   document.getElementById('mainCount').textContent = filtered.length + ' file' + (filtered.length !== 1 ? 's' : '');
 
   if(filtered.length === 0) {
@@ -613,18 +604,17 @@ function renderGrid() {
     return;
   }
 
-  grid.innerHTML = filtered.map(f => `
+  grid.innerHTML = filtered.map(f => {
+    const kws = Array.isArray(f.keywords) ? f.keywords : (() => { try { return JSON.parse(f.keywords || '[]'); } catch(e) { return []; } })();
+    return `
     <div class="card">
       <button class="del-btn" onclick="deleteFile('${f.id}')" title="Remove">✕</button>
       <div class="card-top">
         <span class="type-pill ${pillClass(f.type)}">${pillLabel(f.type)}</span>
         <div class="card-name">${escHtml(f.name)}</div>
       </div>
-      <div class="card-summary${f.summaryDone ? '' : ' loading'}">${escHtml(f.summary)}</div>
-      ${f.keywords && f.keywords.length ? `
-        <div class="keywords">
-          ${f.keywords.map(k => `<span class="kw">${escHtml(k)}</span>`).join('')}
-        </div>` : ''}
+      <div class="card-summary">${escHtml(f.summary)}</div>
+      ${kws.length ? `<div class="keywords">${kws.map(k => `<span class="kw">${escHtml(k)}</span>`).join('')}</div>` : ''}
       <div class="card-footer">
         <span class="card-meta">${fmtDate(f.updated)}</span>
         <a class="card-link" href="${escHtml(f.link)}" target="_blank" rel="noopener">
@@ -632,8 +622,8 @@ function renderGrid() {
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </a>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 /* ── Modal ── */
@@ -642,7 +632,8 @@ function openModal() {
   document.getElementById('driveLink').value = '';
   document.getElementById('fileName').value = '';
   document.getElementById('fileType').value = 'sheet';
-  document.getElementById('fileHint').value = '';
+  document.getElementById('fileSummary').value = '';
+  document.getElementById('fileKeywords').value = '';
   document.getElementById('addBtn').disabled = false;
   document.getElementById('addBtn').textContent = 'Add file';
   setTimeout(() => document.getElementById('driveLink').focus(), 50);
@@ -657,33 +648,13 @@ document.getElementById('driveLink').addEventListener('input', function() {
   if(detected !== 'other') document.getElementById('fileType').value = detected;
 });
 
-/* ── Apps Script sync (optional) ── */
-async function syncFromScript() {
-  if (!SCRIPT_URL) return;
-  try {
-    const res = await fetch(SCRIPT_URL + '?action=get');
-    const data = await res.json();
-    if(Array.isArray(data)) {
-      data.forEach(remote => {
-        const existing = files.find(f => f.id === remote.id);
-        if(existing) {
-          existing.summary = remote.summary || existing.summary;
-          existing.keywords = remote.keywords || existing.keywords;
-          existing.updated = remote.updated || existing.updated;
-          existing.summaryDone = true;
-        }
-      });
-      save();
-      renderAll();
-    }
-  } catch(e) { console.log('Sync skipped:', e.message); }
-}
+/* ── Spin animation for loader ── */
+const style = document.createElement('style');
+style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
 
 /* ── Init ── */
-load();
-renderAll();
-syncFromScript();
-setInterval(syncFromScript, 6 * 60 * 60 * 1000);
+fetchFiles();
 </script>
 </body>
 </html>
