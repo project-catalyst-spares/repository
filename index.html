@@ -454,7 +454,7 @@ let files = [];
 let activeFilter = 'all';
 let searchQuery = '';
 
-const SCRIPT_URL = 'https://script.google.com/a/macros/urbancompany.com/s/AKfycby7MpvcmkwrimIC85FZ__7NiWKZuryud7wUbVIaiiQesbbG88ORHfl-vQ5pIiVnOesx/exec';
+const SCRIPT_URL = 'https://script.google.com/a/macros/urbancompany.com/s/AKfycbwGfuTQxqsn9WCtmgWErYbF0R__SKshcoHuwwiwLag9wCZti4V31ax3JMYQ6DB3f3kl/exec';
 
 /* ── Type helpers ── */
 function pillClass(type) {
@@ -512,16 +512,14 @@ async function addFile() {
   btn.textContent = 'Saving…';
 
   try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'add',
-        id: Date.now() + '-' + Math.random().toString(36).slice(2),
-        name, link, type, summary, keywords,
-        added: Date.now(),
-        updated: Date.now()
-      })
-    });
+    const payload = {
+      id: Date.now() + '-' + Math.random().toString(36).slice(2),
+      name, link, type, summary, keywords,
+      added: Date.now(),
+      updated: Date.now()
+    };
+    const url = SCRIPT_URL + '?action=add&data=' + encodeURIComponent(JSON.stringify(payload));
+    const res  = await fetch(url);
     const data = await res.json();
     if(!data.ok) throw new Error(data.error || 'Unknown error');
     closeModal();
@@ -538,10 +536,8 @@ async function addFile() {
 async function deleteFile(id) {
   if(!confirm('Remove this file from the dashboard?')) return;
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'delete', id })
-    });
+    const url = SCRIPT_URL + '?action=delete&id=' + encodeURIComponent(id);
+    await fetch(url);
     await fetchFiles();
   } catch(e) {
     alert('Could not delete: ' + e.message);
