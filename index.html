@@ -275,21 +275,7 @@ body {
 .card-link:hover { background: #d4eadb; }
 .card-link svg { flex-shrink: 0; }
 
-.del-btn {
-  position: absolute;
-  top: 8px; right: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--ink-4);
-  opacity: 0;
-  padding: 3px;
-  border-radius: 4px;
-  line-height: 1;
-  font-size: 14px;
-}
-.card:hover .del-btn { opacity: 1; }
-.del-btn:hover { background: #fde8e8; color: #a32d2d; }
+.del-btn { display: none; }
 
 /* ── Empty ── */
 .empty {
@@ -442,6 +428,11 @@ body {
     <div class="main-header">
       <div class="main-title" id="mainTitle">All files</div>
       <div class="main-count" id="mainCount"></div>
+      <div style="display:flex;gap:6px;margin-left:auto;align-items:center">
+        <span style="font-size:11px;color:var(--ink-4);font-family:var(--mono)">Sort:</span>
+        <button id="sortNameBtn" onclick="setSort('name')" style="font-size:11px;padding:4px 10px;border:1px solid var(--line);border-radius:4px;background:var(--paper-2);color:var(--ink-2);cursor:pointer;font-family:var(--font)">A → Z</button>
+        <button id="sortTypeBtn" onclick="setSort('type')" style="font-size:11px;padding:4px 10px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)">Type</button>
+      </div>
     </div>
     <div class="grid" id="grid">
       <div class="empty">
@@ -547,8 +538,9 @@ body {
 let files = [];
 let activeFilter = 'all';
 let searchQuery = '';
+let activeSort = 'name';
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0G-XpfgNj8VEOJEqZYUdnkP4D8i1VWpSg1K8ZkJIUELgA3d5_L-1xD9JUxboAt3Rs_g/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzN0g_ZRN1rdk5szyYxGX1YnRYSt10bvN-ezFbBRInBORoHWpmVV-FqTXpndqgzQmmwew/exec';
 
 /* ── Type helpers ── */
 function pillClass(type) {
@@ -664,7 +656,14 @@ function handleSearch() {
   searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
   renderAll();
 }
-function normaliseType(raw) {
+function setSort(s) {
+  activeSort = s;
+  document.getElementById('sortNameBtn').style.background = s === 'name' ? 'var(--paper-2)' : 'transparent';
+  document.getElementById('sortNameBtn').style.fontWeight = s === 'name' ? '500' : '400';
+  document.getElementById('sortTypeBtn').style.background = s === 'type' ? 'var(--paper-2)' : 'transparent';
+  document.getElementById('sortTypeBtn').style.fontWeight = s === 'type' ? '500' : '400';
+  renderAll();
+}
   const r = (raw || '').toLowerCase().trim();
   if(r === 'sheet' || r === 'sheets') return 'sheet';
   if(r === 'doc' || r === 'docs' || r === 'document') return 'doc';
@@ -699,7 +698,15 @@ function updateCounts() {
   });
 }
 function renderGrid() {
-  const filtered = files.filter(matches);
+  const typeOrder = { sheet:0, doc:1, deck:2, form:3, query:4, other:5 };
+  const filtered = files.filter(matches).sort((a, b) => {
+    if(activeSort === 'type') {
+      const ta = typeOrder[normaliseType(a.type)] ?? 99;
+      const tb = typeOrder[normaliseType(b.type)] ?? 99;
+      return ta !== tb ? ta - tb : a.name.localeCompare(b.name);
+    }
+    return a.name.localeCompare(b.name);
+  });
   const grid = document.getElementById('grid');
   document.getElementById('mainCount').textContent = filtered.length + ' file' + (filtered.length !== 1 ? 's' : '');
 
@@ -724,8 +731,7 @@ function renderGrid() {
       <div class="card-summary">${escHtml(f.summary)}</div>
       ${kws.length ? `<div class="keywords">${kws.map(k => `<button class="kw" onclick="searchByKeyword(this.textContent)">${escHtml(k)}</button>`).join('')}</div>` : ''}
       <div class="card-footer">
-        <span class="card-meta">${fmtDate(f.updated)}</span>
-        <div style="display:flex;gap:6px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center;margin-left:auto">
           <button onclick="openEditModal('${f.id}')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-3);cursor:pointer;font-family:var(--font)">Edit</button>
           <a class="card-link" href="${escHtml(f.link)}" target="_blank" rel="noopener">
             Open
