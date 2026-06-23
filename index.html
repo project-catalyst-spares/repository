@@ -6,7 +6,7 @@
 <title>Repository</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -17,371 +17,116 @@
   --ink-4: #a8a89f;
   --paper: #f6f5f0;
   --paper-2: #edecea;
-  --paper-3: #e3e2dc;
   --line: rgba(15,15,14,0.1);
   --line-2: rgba(15,15,14,0.06);
   --accent: #1a6b3c;
   --accent-light: #e8f4ed;
   --accent-mid: #2d9e5f;
-  --warn: #8b3a0f;
-  --warn-light: #fdf0e8;
-  --blue: #1a3f6b;
-  --blue-light: #e8eef8;
-  --purple: #4a1a6b;
-  --purple-light: #f0e8f8;
   --r: 6px;
   --r-lg: 10px;
   --font: 'Inter', system-ui, sans-serif;
   --mono: 'JetBrains Mono', monospace;
 }
 
-body {
-  font-family: var(--font);
-  background: var(--paper);
-  color: var(--ink);
-  min-height: 100vh;
-  font-size: 14px;
-  line-height: 1.5;
-}
+body { font-family: var(--font); background: var(--paper); color: var(--ink); min-height: 100vh; font-size: 14px; line-height: 1.5; }
 
-/* ── Top bar ── */
-.topbar {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 0 2rem;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-.logo {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--paper);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.logo span { color: var(--accent-mid); }
-.search-outer {
-  flex: 1;
-  max-width: 480px;
-  position: relative;
-}
-.search-outer svg {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.4;
-  pointer-events: none;
-}
-#searchInput {
-  width: 100%;
-  padding: 7px 12px 7px 32px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: var(--r);
-  color: var(--paper);
-  font-family: var(--font);
-  font-size: 13px;
-}
-#searchInput:focus { outline: none; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); }
+/* ── Topbar ── */
+.topbar { background: var(--ink); color: var(--paper); padding: 0 2rem; height: 52px; display: flex; align-items: center; gap: 1.5rem; position: sticky; top: 0; z-index: 50; }
+.logo { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: var(--paper); white-space: nowrap; flex-shrink: 0; }
+.search-outer { flex: 1; max-width: 480px; position: relative; }
+.search-outer svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.4; pointer-events: none; }
+#searchInput { width: 100%; padding: 7px 12px 7px 32px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--r); color: var(--paper); font-family: var(--font); font-size: 13px; }
+#searchInput:focus { outline: none; border-color: rgba(255,255,255,0.3); }
 #searchInput::placeholder { color: rgba(246,245,240,0.35); }
-
-.add-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: var(--r);
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  margin-left: auto;
-  flex-shrink: 0;
-}
+.add-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--r); font-family: var(--font); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; margin-left: auto; flex-shrink: 0; }
 .add-btn:hover { background: var(--accent-mid); }
 
 /* ── Layout ── */
 .layout { display: flex; min-height: calc(100vh - 52px); }
 
 /* ── Sidebar ── */
-.sidebar {
-  width: 200px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--line);
-  padding: 1.5rem 0;
-  background: var(--paper);
-  position: sticky;
-  top: 52px;
-  height: calc(100vh - 52px);
-  overflow-y: auto;
-}
-.sidebar-section { margin-bottom: 1.5rem; }
-.sidebar-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--ink-4);
-  text-transform: uppercase;
-  padding: 0 1rem;
-  margin-bottom: 4px;
-}
-.filter-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 1rem;
-  font-size: 13px;
-  color: var(--ink-2);
-  cursor: pointer;
-  border-radius: 0;
-  transition: background 0.1s;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  font-family: var(--font);
-}
+.sidebar { width: 200px; flex-shrink: 0; border-right: 1px solid var(--line); padding: 1.5rem 0; background: var(--paper); position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto; }
+.sidebar-label { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: var(--ink-4); text-transform: uppercase; padding: 0 1rem; margin-bottom: 4px; }
+.filter-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 1rem; font-size: 13px; color: var(--ink-2); cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: var(--font); transition: background 0.1s; }
 .filter-item:hover { background: var(--paper-2); }
 .filter-item.active { color: var(--accent); font-weight: 500; background: var(--accent-light); }
-.filter-count {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--ink-4);
-  background: var(--paper-3);
-  padding: 1px 6px;
-  border-radius: 10px;
-}
+.filter-count { font-family: var(--mono); font-size: 10px; color: var(--ink-4); background: var(--paper-2); padding: 1px 6px; border-radius: 10px; }
 .filter-item.active .filter-count { background: var(--accent-light); color: var(--accent); }
+.sidebar-section { margin-bottom: 1.5rem; }
 
 /* ── Main ── */
 .main { flex: 1; padding: 1.75rem 2rem; min-width: 0; }
-.main-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 1.25rem; }
+.main-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; flex-wrap: wrap; }
 .main-title { font-size: 15px; font-weight: 600; }
 .main-count { font-family: var(--mono); font-size: 11px; color: var(--ink-4); }
+.sort-btn { font-size: 11px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink-2); cursor: pointer; font-family: var(--font); transition: background 0.1s; }
+.sort-btn.active { background: var(--paper-2); font-weight: 500; }
 
-/* ── Cards ── */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+/* ── Grid ── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
 
-.card {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 1rem 1.125rem 0.875rem;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: border-color 0.12s, box-shadow 0.12s;
-  position: relative;
-}
-.card:hover { border-color: var(--line-2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+/* ── Card ── */
+.card { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1rem 1.125rem 0.875rem; display: flex; flex-direction: column; gap: 8px; transition: box-shadow 0.12s; }
+.card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+.card[data-type="sheet"] { background: #e8f5e9; border-color: #c8e6c9; }
+.card[data-type="doc"]   { background: #e3f2fd; border-color: #bbdefb; }
+.card[data-type="deck"]  { background: #fffde7; border-color: #fff59d; }
+.card[data-type="form"]  { background: #f3e5f5; border-color: #e1bee7; }
+.card[data-type="query"] { background: #fff3e0; border-color: #ffe0b2; }
+.card[data-type="other"] { background: #fff; }
 
-/* ── Card background colors by type ── */
-.card[data-type="sheet"]  { background: #e8f5e9; border-color: #c8e6c9; }
-.card[data-type="doc"]    { background: #e3f2fd; border-color: #bbdefb; }
-.card[data-type="deck"]   { background: #fffde7; border-color: #fff59d; }
-.card[data-type="form"]   { background: #f3e5f5; border-color: #e1bee7; }
-.card[data-type="query"]  { background: #fff3e0; border-color: #ffe0b2; }
-.card[data-type="other"]  { background: #fff; }
+.card-top { display: flex; align-items: flex-start; gap: 8px; }
+.type-pill { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.04em; flex-shrink: 0; margin-top: 1px; }
+.pill-sheet { background: #a5d6a7; color: #1b5e20; }
+.pill-doc   { background: #90caf9; color: #0d47a1; }
+.pill-deck  { background: #fff176; color: #f57f17; }
+.pill-form  { background: #ce93d8; color: #4a148c; }
+.pill-query { background: #ffcc80; color: #e65100; }
+.pill-other { background: var(--paper-2); color: var(--ink-2); }
 
-.card-top { display: flex; align-items: flex-start; gap: 10px; }
-.type-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.pill-sheet  { background: #a5d6a7; color: #1b5e20; }
-.pill-doc    { background: #90caf9; color: #0d47a1; }
-.pill-deck   { background: #fff176; color: #f57f17; }
-.pill-form   { background: #ce93d8; color: #4a148c; }
-.pill-query  { background: #ffcc80; color: #e65100; }
-.pill-other  { background: var(--paper-2); color: var(--ink-2); }
+.card-name { font-size: 13px; font-weight: 500; line-height: 1.4; flex: 1; word-break: break-word; }
+.card-summary { font-size: 12px; color: var(--ink-3); line-height: 1.6; }
 
-.card-name {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
-  flex: 1;
-  word-break: break-word;
-}
-.card-summary {
-  font-size: 12px;
-  color: var(--ink-3);
-  line-height: 1.6;
-}
-.card-summary.loading { font-style: italic; color: var(--ink-4); }
+.keywords { display: flex; flex-wrap: wrap; gap: 4px; }
+.kw { font-size: 10px; font-family: var(--mono); padding: 2px 7px; background: rgba(0,0,0,0.07); border-radius: 3px; color: var(--ink-2); cursor: pointer; border: none; transition: background 0.1s; }
+.kw:hover { background: rgba(0,0,0,0.15); }
 
-.keywords {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.kw {
-  font-size: 10px;
-  font-family: var(--mono);
-  padding: 2px 7px;
-  background: rgba(0,0,0,0.07);
-  border-radius: 3px;
-  color: var(--ink-2);
-  cursor: pointer;
-  border: none;
-  transition: background 0.1s, color 0.1s;
-}
-.kw:hover { background: rgba(0,0,0,0.15); color: var(--ink); }
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px solid var(--line-2);
-  margin-top: auto;
-}
-.card-meta { font-size: 11px; color: var(--ink-4); font-family: var(--mono); }
-.card-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--accent);
-  text-decoration: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--accent-light);
-  background: var(--accent-light);
-  transition: background 0.1s;
-}
+.card-footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding-top: 8px; border-top: 1px solid var(--line-2); margin-top: auto; }
+.card-link { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: var(--accent); text-decoration: none; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--accent-light); background: var(--accent-light); transition: background 0.1s; }
 .card-link:hover { background: #d4eadb; }
-.card-link svg { flex-shrink: 0; }
+.edit-btn { font-size: 11px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--ink-3); cursor: pointer; font-family: var(--font); }
+.edit-btn:hover { background: var(--paper-2); color: var(--ink); }
 
-.del-btn { display: none; }
-
-/* ── Empty ── */
-.empty {
-  grid-column: 1 / -1;
-  padding: 4rem 2rem;
-  text-align: center;
-  color: var(--ink-4);
-}
+/* ── Empty / No results ── */
+.empty { grid-column: 1/-1; padding: 4rem 2rem; text-align: center; color: var(--ink-4); }
 .empty svg { margin-bottom: 12px; opacity: 0.3; }
 .empty p { font-size: 13px; }
 
-/* ── Add modal ── */
-.overlay {
-  position: fixed; inset: 0;
-  background: rgba(15,15,14,0.5);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100; padding: 1rem;
-  backdrop-filter: blur(2px);
-}
-.modal {
-  background: #fff;
-  border-radius: var(--r-lg);
-  padding: 1.5rem;
-  max-width: 480px;
-  width: 100%;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
-}
+/* ── Modal shared ── */
+.overlay { position: fixed; inset: 0; background: rgba(15,15,14,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; backdrop-filter: blur(2px); }
+.modal { background: #fff; border-radius: var(--r-lg); padding: 1.5rem; max-width: 480px; width: 100%; box-shadow: 0 8px 40px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto; }
 .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
 .modal-sub { font-size: 12px; color: var(--ink-3); margin-bottom: 1.25rem; }
 .field { margin-bottom: 1rem; }
 .field label { display: block; font-size: 12px; font-weight: 500; color: var(--ink-2); margin-bottom: 5px; }
-.field input, .field select, .field textarea {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  font-family: var(--font);
-  font-size: 13px;
-  color: var(--ink);
-  background: var(--paper);
-}
-.field input:focus, .field select:focus, .field textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
+.field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r); font-family: var(--font); font-size: 13px; color: var(--ink); background: var(--paper); }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
 .field textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
-.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
-.btn-cancel {
-  padding: 7px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  background: transparent;
-  font-family: var(--font);
-  font-size: 13px;
-  cursor: pointer;
-  color: var(--ink-2);
-}
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; flex-wrap: wrap; }
+.btn-cancel { padding: 7px 14px; border: 1px solid var(--line); border-radius: var(--r); background: transparent; font-family: var(--font); font-size: 13px; cursor: pointer; color: var(--ink-2); }
 .btn-cancel:hover { background: var(--paper-2); }
-.btn-add {
-  padding: 7px 16px;
-  border: none;
-  border-radius: var(--r);
-  background: var(--accent);
-  color: #fff;
-  font-family: var(--font);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
+.btn-add { padding: 7px 16px; border: none; border-radius: var(--r); background: var(--accent); color: #fff; font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; }
 .btn-add:hover { background: var(--accent-mid); }
 .btn-add:disabled { opacity: 0.5; cursor: not-allowed; }
-
-
-
-.field-warn {
-  font-size: 11px;
-  color: #854F0B;
-  background: #FAEEDA;
-  border-radius: 4px;
-  padding: 4px 8px;
-  margin-top: 4px;
-  display: none;
-}
-.field-warn.show { display: block; }
-.field-error {
-  font-size: 11px;
-  color: #A32D2D;
-  background: #FCEBEB;
-  border-radius: 4px;
-  padding: 4px 8px;
-  margin-top: 4px;
-  display: none;
-}
-.field-error.show { display: block; }
-.btn-danger {
-  padding: 7px 14px;
-  border: 1px solid #f5c6c6;
-  border-radius: var(--r);
-  background: #FCEBEB;
-  color: #A32D2D;
-  font-family: var(--font);
-  font-size: 13px;
-  cursor: pointer;
-  margin-right: auto;
-}
+.btn-danger { padding: 7px 14px; border: 1px solid #f5c6c6; border-radius: var(--r); background: #fcebeb; color: #a32d2d; font-family: var(--font); font-size: 13px; cursor: pointer; margin-right: auto; }
 .btn-danger:hover { background: #f5c6c6; }
+
+/* ── Inline field messages ── */
+.field-warn { font-size: 11px; color: #854f0b; background: #faeeda; border-radius: 4px; padding: 4px 8px; margin-top: 4px; display: none; }
+.field-warn.show { display: block; }
+.field-error { font-size: 11px; color: #a32d2d; background: #fcebeb; border-radius: 4px; padding: 4px 8px; margin-top: 4px; display: none; }
+.field-error.show { display: block; }
+
 @media (max-width: 640px) {
   .sidebar { display: none; }
   .main { padding: 1rem; }
@@ -391,25 +136,19 @@ body {
 </head>
 <body>
 
-<!-- Top bar -->
 <div class="topbar">
   <div class="logo">Repository</div>
   <div class="search-outer">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <input type="text" id="searchInput" placeholder="Search files, summaries, keywords…" oninput="handleSearch()">
   </div>
-  <button class="add-btn" onclick="openModal()">
+  <button class="add-btn" onclick="openAddModal()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
     Add file
   </button>
 </div>
 
-
-
-<!-- Layout -->
 <div class="layout">
-
-  <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Type</div>
@@ -423,46 +162,43 @@ body {
     </div>
   </div>
 
-  <!-- Main -->
   <div class="main">
     <div class="main-header">
       <div class="main-title" id="mainTitle">All files</div>
       <div class="main-count" id="mainCount"></div>
       <div style="display:flex;gap:6px;margin-left:auto;align-items:center">
         <span style="font-size:11px;color:var(--ink-4);font-family:var(--mono)">Sort:</span>
-        <button id="sortNameBtn" onclick="setSort('name')" style="font-size:11px;padding:4px 10px;border:1px solid var(--line);border-radius:4px;background:var(--paper-2);color:var(--ink-2);cursor:pointer;font-family:var(--font)">A → Z</button>
-        <button id="sortTypeBtn" onclick="setSort('type')" style="font-size:11px;padding:4px 10px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)">Type</button>
+        <button id="sortNameBtn" class="sort-btn active" onclick="setSort('name')">A → Z</button>
+        <button id="sortTypeBtn" class="sort-btn" onclick="setSort('type')">Type</button>
       </div>
     </div>
     <div class="grid" id="grid">
       <div class="empty">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <p>No files yet. Add a Drive link to get started.</p>
+        <p>Loading files…</p>
       </div>
     </div>
   </div>
-
 </div>
 
 <!-- Add modal -->
-<div class="overlay" id="overlay" style="display:none" onclick="overlayClick(event)">
+<div class="overlay" id="addOverlay" style="display:none" onclick="if(event.target===this)closeAddModal()">
   <div class="modal">
     <div class="modal-title">Add a file</div>
-    <div class="modal-sub">Paste a Google Drive link and write a short summary. This will be visible to everyone.</div>
-
+    <div class="modal-sub">Paste a Google Drive link and write a short summary. Visible to everyone.</div>
     <div class="field">
       <label>Google Drive link</label>
-      <input type="url" id="driveLink" placeholder="https://docs.google.com/…" oninput="checkDupeLink()">
-      <div class="field-error" id="linkError">This link already exists in the dashboard.</div>
+      <input type="url" id="addLink" placeholder="https://docs.google.com/…" oninput="checkAddLink()">
+      <div class="field-error" id="addLinkError">This link already exists in the dashboard.</div>
     </div>
     <div class="field">
       <label>File name</label>
-      <input type="text" id="fileName" placeholder="e.g. AC Co-Pilot Analysis Q2" oninput="checkDupeName()">
-      <div class="field-warn" id="nameWarn">A file with this name already exists — make sure this is a different file.</div>
+      <input type="text" id="addName" placeholder="e.g. AC Co-Pilot Analysis Q2" oninput="checkAddName()">
+      <div class="field-warn" id="addNameWarn">A file with this name already exists — make sure this is a different file.</div>
     </div>
     <div class="field">
       <label>Type</label>
-      <select id="fileType">
+      <select id="addType">
         <option value="sheet">Sheet</option>
         <option value="doc">Doc</option>
         <option value="deck">Deck</option>
@@ -473,36 +209,33 @@ body {
     </div>
     <div class="field">
       <label>Summary <span style="color:var(--ink-4);font-weight:400">(what's in this file and who should use it)</span></label>
-      <textarea id="fileSummary" placeholder="e.g. Tracks spare parts revenue by city and category. Used by the sourcing and ops teams for weekly reviews."></textarea>
+      <textarea id="addSummary" placeholder="e.g. Tracks spare parts revenue by city and category."></textarea>
     </div>
     <div class="field">
       <label>Keywords <span style="color:var(--ink-4);font-weight:400">(comma separated)</span></label>
-      <input type="text" id="fileKeywords" placeholder="e.g. spares, revenue, city-wise, GMV">
+      <input type="text" id="addKeywords" placeholder="e.g. spares, revenue, GMV">
     </div>
-
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
       <button class="btn-add" id="addBtn" onclick="addFile()">Add file</button>
     </div>
   </div>
 </div>
 
 <!-- Edit modal -->
-<div class="overlay" id="editOverlay" style="display:none" onclick="editOverlayClick(event)">
+<div class="overlay" id="editOverlay" style="display:none" onclick="if(event.target===this)closeEditModal()">
   <div class="modal">
     <div class="modal-title">Edit file</div>
     <div class="modal-sub">Changes are saved to the shared dashboard.</div>
-
     <input type="hidden" id="editId">
-
     <div class="field">
       <label>Google Drive link</label>
-      <input type="url" id="editLink" placeholder="https://docs.google.com/…" oninput="checkEditDupeLink()">
+      <input type="url" id="editLink" oninput="checkEditLink()">
       <div class="field-error" id="editLinkError">This link already exists on another file.</div>
     </div>
     <div class="field">
       <label>File name</label>
-      <input type="text" id="editName" placeholder="e.g. AC Co-Pilot Analysis Q2" oninput="checkEditDupeName()">
+      <input type="text" id="editName" oninput="checkEditName()">
       <div class="field-warn" id="editNameWarn">Another file has this name — double-check this is intentional.</div>
     </div>
     <div class="field">
@@ -522,9 +255,8 @@ body {
     </div>
     <div class="field">
       <label>Keywords <span style="color:var(--ink-4);font-weight:400">(comma separated)</span></label>
-      <input type="text" id="editKeywords" placeholder="e.g. spares, revenue, city-wise, GMV">
+      <input type="text" id="editKeywords">
     </div>
-
     <div class="modal-actions">
       <button class="btn-danger" onclick="deleteFromEdit()">Delete file</button>
       <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
@@ -534,270 +266,95 @@ body {
 </div>
 
 <script>
-/* ── State ── */
-let files = [];
-let activeFilter = 'all';
-let searchQuery = '';
-let activeSort = 'name';
-
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGlyuA6SCPDSuL_2DK-ay3VLx8XeFk149SKBRWNseCuYnkf081KWaXHlZT5gUscf0kvw/exec';
 
-/* ── Type helpers ── */
-function pillClass(type) {
-  return { sheet:'pill-sheet', doc:'pill-doc', deck:'pill-deck', form:'pill-form', query:'pill-query', other:'pill-other' }[type] || 'pill-other';
-}
-function pillLabel(type) {
-  return { sheet:'SHEET', doc:'DOC', deck:'DECK', form:'FORM', query:'QUERY', other:'OTHER' }[type] || 'OTHER';
-}
-function fmtDate(ts) {
-  if(!ts) return '';
-  return new Date(Number(ts)).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
-}
-function detectType(url) {
-  if(url.includes('spreadsheets')) return 'sheet';
-  if(url.includes('document')) return 'doc';
-  if(url.includes('presentation')) return 'deck';
+let files = [];
+let activeFilter = 'all';
+let searchQuery  = '';
+let activeSort   = 'name';
+
+/* ── Helpers ── */
+function norm(raw) {
+  const r = (raw||'').toLowerCase().trim();
+  if(r==='sheet'||r==='sheets') return 'sheet';
+  if(r==='doc'||r==='docs'||r==='document') return 'doc';
+  if(r==='deck'||r==='decks'||r==='presentation') return 'deck';
+  if(r==='form'||r==='forms') return 'form';
+  if(r==='query'||r==='queries'||r==='sql query'||r==='sql') return 'query';
   return 'other';
 }
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function pillClass(t){ return {sheet:'pill-sheet',doc:'pill-doc',deck:'pill-deck',form:'pill-form',query:'pill-query',other:'pill-other'}[t]||'pill-other'; }
+function pillLabel(t){ return {sheet:'SHEET',doc:'DOC',deck:'DECK',form:'FORM',query:'QUERY',other:'OTHER'}[t]||'OTHER'; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function kwArr(f){ return Array.isArray(f.keywords)?f.keywords:(()=>{try{return JSON.parse(f.keywords||'[]');}catch(e){return [];}})(); }
 
-/* ── Apps Script: fetch all files ── */
+/* ── Fetch ── */
 async function fetchFiles() {
-  setLoading(true);
   try {
-    const res = await fetch(SCRIPT_URL + '?action=get');
+    const res  = await fetch(SCRIPT_URL + '?action=get');
     const data = await res.json();
-    if(Array.isArray(data)) {
-      files = data;
-      renderAll();
-    }
-  } catch(e) {
-    console.error('Could not load files:', e.message);
-  }
-  setLoading(false);
+    if(Array.isArray(data)){ files = data; renderAll(); }
+  } catch(e) { console.error('Fetch failed:', e); }
 }
 
-/* ── Apps Script: add a file ── */
+/* ── Add ── */
+function checkAddLink() {
+  const v = document.getElementById('addLink').value.trim();
+  document.getElementById('addLinkError').classList.toggle('show', !!v && files.some(f=>f.link.trim()===v));
+}
+function checkAddName() {
+  const v = document.getElementById('addName').value.trim().toLowerCase();
+  document.getElementById('addNameWarn').classList.toggle('show', !!v && files.some(f=>f.name.trim().toLowerCase()===v));
+}
 async function addFile() {
-  const link    = document.getElementById('driveLink').value.trim();
-  const name    = document.getElementById('fileName').value.trim();
-  const type    = document.getElementById('fileType').value;
-  const summary = document.getElementById('fileSummary').value.trim();
-  const kwRaw   = document.getElementById('fileKeywords').value.trim();
-
-  if(!link || !name || !summary) {
-    alert('Please fill in the link, name, and summary.');
-    return;
-  }
-
-  // Block duplicate link
-  if(files.some(f => f.link.trim() === link)) {
-    document.getElementById('linkError').classList.add('show');
-    document.getElementById('driveLink').focus();
-    return;
-  }
-
-  const keywords = kwRaw ? kwRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
+  const link    = document.getElementById('addLink').value.trim();
+  const name    = document.getElementById('addName').value.trim();
+  const type    = document.getElementById('addType').value;
+  const summary = document.getElementById('addSummary').value.trim();
+  const kwRaw   = document.getElementById('addKeywords').value.trim();
+  if(!link||!name||!summary){ alert('Please fill in link, name, and summary.'); return; }
+  if(files.some(f=>f.link.trim()===link)){ document.getElementById('addLinkError').classList.add('show'); return; }
+  const keywords = kwRaw ? kwRaw.split(',').map(k=>k.trim()).filter(Boolean) : [];
   const btn = document.getElementById('addBtn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
+  btn.disabled = true; btn.textContent = 'Saving…';
   try {
-    const payload = {
-      id: Date.now() + '-' + Math.random().toString(36).slice(2),
-      name, link, type, summary, keywords,
-      added: Date.now(),
-      updated: Date.now()
-    };
-    const url = SCRIPT_URL + '?action=add&data=' + encodeURIComponent(JSON.stringify(payload));
-    const res  = await fetch(url);
+    const payload = { id: Date.now()+'-'+Math.random().toString(36).slice(2), name, link, type, summary, keywords, added: Date.now(), updated: Date.now() };
+    const res  = await fetch(SCRIPT_URL + '?action=add&data=' + encodeURIComponent(JSON.stringify(payload)));
     const data = await res.json();
-    if(!data.ok) throw new Error(data.error || 'Unknown error');
-    closeModal();
+    if(!data.ok) throw new Error(data.error||'Unknown error');
+    closeAddModal();
     await fetchFiles();
-  } catch(e) {
-    alert('Could not save file: ' + e.message);
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Add file';
+  } catch(e) { alert('Could not save: ' + e.message); }
+  btn.disabled = false; btn.textContent = 'Add file';
 }
 
-/* ── Apps Script: delete a file ── */
-async function deleteFile(id) {
-  if(!confirm('Remove this file from the dashboard?')) return;
-  try {
-    const url = SCRIPT_URL + '?action=delete&id=' + encodeURIComponent(id);
-    await fetch(url);
-    await fetchFiles();
-  } catch(e) {
-    alert('Could not delete: ' + e.message);
-  }
+/* ── Edit ── */
+function checkEditLink() {
+  const v  = document.getElementById('editLink').value.trim();
+  const id = document.getElementById('editId').value;
+  document.getElementById('editLinkError').classList.toggle('show', !!v && files.some(f=>f.id!==id&&f.link.trim()===v));
 }
-
-/* ── Loading state ── */
-function setLoading(on) {
-  const grid = document.getElementById('grid');
-  if(on) grid.innerHTML = `<div class="empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><p>Loading files…</p></div>`;
+function checkEditName() {
+  const v  = document.getElementById('editName').value.trim().toLowerCase();
+  const id = document.getElementById('editId').value;
+  document.getElementById('editNameWarn').classList.toggle('show', !!v && files.some(f=>f.id!==id&&f.name.trim().toLowerCase()===v));
 }
-
-/* ── Filter / search ── */
-function setFilter(f, el) {
-  activeFilter = f;
-  document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-  const titles = { all:'All files', sheet:'Sheets', doc:'Docs', deck:'Decks', form:'Forms', query:'Queries', other:'Other' };
-  document.getElementById('mainTitle').textContent = titles[f] || 'All files';
-  renderAll();
-}
-function handleSearch() {
-  searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
-  renderAll();
-}
-function setSort(s) {
-  activeSort = s;
-  document.getElementById('sortNameBtn').style.background = s === 'name' ? 'var(--paper-2)' : 'transparent';
-  document.getElementById('sortNameBtn').style.fontWeight = s === 'name' ? '500' : '400';
-  document.getElementById('sortTypeBtn').style.background = s === 'type' ? 'var(--paper-2)' : 'transparent';
-  document.getElementById('sortTypeBtn').style.fontWeight = s === 'type' ? '500' : '400';
-  renderAll();
-}
-  const r = (raw || '').toLowerCase().trim();
-  if(r === 'sheet' || r === 'sheets') return 'sheet';
-  if(r === 'doc' || r === 'docs' || r === 'document') return 'doc';
-  if(r === 'deck' || r === 'decks' || r === 'presentation') return 'deck';
-  if(r === 'form' || r === 'forms') return 'form';
-  if(r === 'query' || r === 'queries' || r === 'sql query' || r === 'sql') return 'query';
-  return 'other';
-}
-function matches(f) {
-  const ftype = normaliseType(f.type);
-  const filterOk = activeFilter === 'all' || ftype === activeFilter;
-  if(!filterOk) return false;
-  if(!searchQuery) return true;
-  const kws = Array.isArray(f.keywords) ? f.keywords : (typeof f.keywords === 'string' ? (() => { try { return JSON.parse(f.keywords || '[]'); } catch(e) { return []; } })() : []);
-  return f.name.toLowerCase().includes(searchQuery)
-    || (f.summary||'').toLowerCase().includes(searchQuery)
-    || kws.some(k => k.toLowerCase().includes(searchQuery))
-    || ftype.includes(searchQuery);
-}
-
-/* ── Render ── */
-function renderAll() {
-  updateCounts();
-  renderGrid();
-}
-function updateCounts() {
-  const types = ['sheet','doc','deck','form','query','other'];
-  document.getElementById('cnt-all').textContent = files.length;
-  types.forEach(t => {
-    const el = document.getElementById('cnt-' + t);
-    if(el) el.textContent = files.filter(f => normaliseType(f.type) === t).length;
-  });
-}
-function renderGrid() {
-  const typeOrder = { sheet:0, doc:1, deck:2, form:3, query:4, other:5 };
-  const filtered = files.filter(matches).sort((a, b) => {
-    if(activeSort === 'type') {
-      const ta = typeOrder[normaliseType(a.type)] ?? 99;
-      const tb = typeOrder[normaliseType(b.type)] ?? 99;
-      return ta !== tb ? ta - tb : a.name.localeCompare(b.name);
-    }
-    return a.name.localeCompare(b.name);
-  });
-  const grid = document.getElementById('grid');
-  document.getElementById('mainCount').textContent = filtered.length + ' file' + (filtered.length !== 1 ? 's' : '');
-
-  if(filtered.length === 0) {
-    grid.innerHTML = `<div class="empty">
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <p>${files.length === 0 ? 'No files yet. Click <strong>Add file</strong> to get started.' : 'No files match your search.'}</p>
-    </div>`;
-    return;
-  }
-
-  grid.innerHTML = filtered.map(f => {
-    const ftype = normaliseType(f.type);
-    const kws = Array.isArray(f.keywords) ? f.keywords : (() => { try { return JSON.parse(f.keywords || '[]'); } catch(e) { return []; } })();
-    return `
-    <div class="card" data-type="${ftype}">
-      <button class="del-btn" onclick="deleteFile('${f.id}')" title="Remove">✕</button>
-      <div class="card-top">
-        <span class="type-pill ${pillClass(ftype)}">${pillLabel(ftype)}</span>
-        <div class="card-name">${escHtml(f.name)}</div>
-      </div>
-      <div class="card-summary">${escHtml(f.summary)}</div>
-      ${kws.length ? `<div class="keywords">${kws.map(k => `<button class="kw" onclick="searchByKeyword(this.textContent)">${escHtml(k)}</button>`).join('')}</div>` : ''}
-      <div class="card-footer">
-        <div style="display:flex;gap:6px;align-items:center;margin-left:auto">
-          <button onclick="openEditModal('${f.id}')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-3);cursor:pointer;font-family:var(--font)">Edit</button>
-          <a class="card-link" href="${escHtml(f.link)}" target="_blank" rel="noopener">
-            Open
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          </a>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ── Keyword click search ── */
-function searchByKeyword(kw) {
-  const input = document.getElementById('searchInput');
-  input.value = kw.trim();
-  searchQuery = kw.trim().toLowerCase();
-  renderAll();
-  input.focus();
-}
-
-/* ── Duplicate checks (add modal) ── */
-function checkDupeLink() {
-  const val = document.getElementById('driveLink').value.trim();
-  const dupe = val && files.some(f => f.link.trim() === val);
-  document.getElementById('linkError').classList.toggle('show', dupe);
-}
-function checkDupeName() {
-  const val = document.getElementById('fileName').value.trim().toLowerCase();
-  const dupe = val && files.some(f => f.name.trim().toLowerCase() === val);
-  document.getElementById('nameWarn').classList.toggle('show', dupe);
-}
-
-/* ── Duplicate checks (edit modal) ── */
-function checkEditDupeLink() {
-  const val  = document.getElementById('editLink').value.trim();
-  const id   = document.getElementById('editId').value;
-  const dupe = val && files.some(f => f.id !== id && f.link.trim() === val);
-  document.getElementById('editLinkError').classList.toggle('show', dupe);
-}
-function checkEditDupeName() {
-  const val  = document.getElementById('editName').value.trim().toLowerCase();
-  const id   = document.getElementById('editId').value;
-  const dupe = val && files.some(f => f.id !== id && f.name.trim().toLowerCase() === val);
-  document.getElementById('editNameWarn').classList.toggle('show', dupe);
-}
-
-/* ── Edit modal ── */
 function openEditModal(id) {
-  const f = files.find(d => String(d.id) === String(id));
+  const f = files.find(d=>String(d.id)===String(id));
   if(!f) return;
-  document.getElementById('editId').value       = f.id;
-  document.getElementById('editLink').value     = f.link || '';
-  document.getElementById('editName').value     = f.name || '';
-  document.getElementById('editSummary').value  = f.summary || '';
-  document.getElementById('editType').value     = normaliseType(f.type);
-  const kws = Array.isArray(f.keywords) ? f.keywords : (() => { try { return JSON.parse(f.keywords || '[]'); } catch(e) { return []; } })();
-  document.getElementById('editKeywords').value = kws.join(', ');
+  document.getElementById('editId').value      = f.id;
+  document.getElementById('editLink').value    = f.link||'';
+  document.getElementById('editName').value    = f.name||'';
+  document.getElementById('editSummary').value = f.summary||'';
+  document.getElementById('editType').value    = norm(f.type);
+  document.getElementById('editKeywords').value= kwArr(f).join(', ');
   document.getElementById('editLinkError').classList.remove('show');
   document.getElementById('editNameWarn').classList.remove('show');
-  document.getElementById('editBtn').disabled = false;
+  document.getElementById('editBtn').disabled  = false;
   document.getElementById('editBtn').textContent = 'Save changes';
   document.getElementById('editOverlay').style.display = 'flex';
 }
-function closeEditModal() { document.getElementById('editOverlay').style.display = 'none'; }
-function editOverlayClick(e) { if(e.target === document.getElementById('editOverlay')) closeEditModal(); }
-
+function closeEditModal(){ document.getElementById('editOverlay').style.display='none'; }
 async function saveEdit() {
   const id      = document.getElementById('editId').value;
   const link    = document.getElementById('editLink').value.trim();
@@ -805,78 +362,122 @@ async function saveEdit() {
   const type    = document.getElementById('editType').value;
   const summary = document.getElementById('editSummary').value.trim();
   const kwRaw   = document.getElementById('editKeywords').value.trim();
-
-  if(!link || !name || !summary) { alert('Please fill in link, name, and summary.'); return; }
-
-  // Block if duplicate link on another file
-  if(files.some(f => f.id !== id && f.link.trim() === link)) {
-    alert('This link already exists on another file. Please use a unique link.');
-    return;
-  }
-
-  const keywords = kwRaw ? kwRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
+  if(!link||!name||!summary){ alert('Please fill in link, name, and summary.'); return; }
+  if(files.some(f=>f.id!==id&&f.link.trim()===link)){ document.getElementById('editLinkError').classList.add('show'); return; }
+  const keywords = kwRaw ? kwRaw.split(',').map(k=>k.trim()).filter(Boolean) : [];
   const btn = document.getElementById('editBtn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
+  btn.disabled=true; btn.textContent='Saving…';
   try {
     const payload = { id, name, link, type, summary, keywords, updated: Date.now() };
-    const url = SCRIPT_URL + '?action=update&data=' + encodeURIComponent(JSON.stringify(payload));
-    const res  = await fetch(url);
+    const res  = await fetch(SCRIPT_URL + '?action=update&data=' + encodeURIComponent(JSON.stringify(payload)));
     const data = await res.json();
-    if(!data.ok) throw new Error(data.error || 'Unknown error');
+    if(!data.ok) throw new Error(data.error||'Unknown error');
     closeEditModal();
     await fetchFiles();
-  } catch(e) {
-    alert('Could not save changes: ' + e.message);
-    btn.disabled = false;
-    btn.textContent = 'Save changes';
-  }
+  } catch(e) { alert('Could not save: ' + e.message); btn.disabled=false; btn.textContent='Save changes'; }
 }
-
 async function deleteFromEdit() {
   const id = document.getElementById('editId').value;
   if(!confirm('Delete this file from the dashboard?')) return;
   closeEditModal();
   try {
-    const url = SCRIPT_URL + '?action=delete&id=' + encodeURIComponent(id);
-    await fetch(url);
+    await fetch(SCRIPT_URL + '?action=delete&id=' + encodeURIComponent(id));
     await fetchFiles();
-  } catch(e) {
-    alert('Could not delete: ' + e.message);
+  } catch(e) { alert('Could not delete: ' + e.message); }
+}
+
+/* ── Add modal open/close ── */
+function openAddModal() {
+  ['addLink','addName','addSummary','addKeywords'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('addType').value='sheet';
+  document.getElementById('addLinkError').classList.remove('show');
+  document.getElementById('addNameWarn').classList.remove('show');
+  document.getElementById('addBtn').disabled=false;
+  document.getElementById('addBtn').textContent='Add file';
+  document.getElementById('addOverlay').style.display='flex';
+  setTimeout(()=>document.getElementById('addLink').focus(),50);
+}
+function closeAddModal(){ document.getElementById('addOverlay').style.display='none'; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeAddModal();closeEditModal();} });
+
+/* ── Auto-detect type ── */
+document.getElementById('addLink').addEventListener('input',function(){
+  const d = (()=>{ const u=this.value; if(u.includes('spreadsheets'))return 'sheet'; if(u.includes('document'))return 'doc'; if(u.includes('presentation'))return 'deck'; if(u.includes('forms'))return 'form'; return null; })();
+  if(d) document.getElementById('addType').value=d;
+});
+
+/* ── Filter / search / sort ── */
+function setFilter(f,el) {
+  activeFilter=f;
+  document.querySelectorAll('.filter-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  const titles={all:'All files',sheet:'Sheets',doc:'Docs',deck:'Decks',form:'Forms',query:'Queries',other:'Other'};
+  document.getElementById('mainTitle').textContent=titles[f]||'All files';
+  renderAll();
+}
+function handleSearch(){ searchQuery=document.getElementById('searchInput').value.toLowerCase().trim(); renderAll(); }
+function setSort(s) {
+  activeSort=s;
+  document.getElementById('sortNameBtn').classList.toggle('active',s==='name');
+  document.getElementById('sortTypeBtn').classList.toggle('active',s==='type');
+  renderAll();
+}
+function searchByKeyword(kw) {
+  document.getElementById('searchInput').value=kw;
+  searchQuery=kw.toLowerCase();
+  renderAll();
+}
+function matches(f) {
+  const ft = norm(f.type);
+  if(activeFilter!=='all' && ft!==activeFilter) return false;
+  if(!searchQuery) return true;
+  const kws = kwArr(f);
+  return f.name.toLowerCase().includes(searchQuery)
+    || (f.summary||'').toLowerCase().includes(searchQuery)
+    || kws.some(k=>k.toLowerCase().includes(searchQuery))
+    || ft.includes(searchQuery);
+}
+
+/* ── Render ── */
+function renderAll(){ updateCounts(); renderGrid(); }
+function updateCounts() {
+  document.getElementById('cnt-all').textContent=files.length;
+  ['sheet','doc','deck','form','query','other'].forEach(t=>{
+    const el=document.getElementById('cnt-'+t);
+    if(el) el.textContent=files.filter(f=>norm(f.type)===t).length;
+  });
+}
+function renderGrid() {
+  const typeOrder={sheet:0,doc:1,deck:2,form:3,query:4,other:5};
+  const filtered = files.filter(matches).sort((a,b)=>{
+    if(activeSort==='type'){
+      const ta=typeOrder[norm(a.type)]??99, tb=typeOrder[norm(b.type)]??99;
+      return ta!==tb ? ta-tb : a.name.localeCompare(b.name);
+    }
+    return a.name.localeCompare(b.name);
+  });
+  const grid=document.getElementById('grid');
+  document.getElementById('mainCount').textContent=filtered.length+' file'+(filtered.length!==1?'s':'');
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg><p>${files.length===0?'No files yet. Click <strong>Add file</strong> to get started.':'No files match your search.'}</p></div>`;
+    return;
   }
+  grid.innerHTML=filtered.map(f=>{
+    const ft=norm(f.type), kws=kwArr(f);
+    return `<div class="card" data-type="${ft}">
+      <div class="card-top">
+        <span class="type-pill ${pillClass(ft)}">${pillLabel(ft)}</span>
+        <div class="card-name">${esc(f.name)}</div>
+      </div>
+      <div class="card-summary">${esc(f.summary)}</div>
+      ${kws.length?`<div class="keywords">${kws.map(k=>`<button class="kw" onclick="searchByKeyword('${esc(k)}')">${esc(k)}</button>`).join('')}</div>`:''}
+      <div class="card-footer">
+        <button class="edit-btn" onclick="openEditModal('${f.id}')">Edit</button>
+        <a class="card-link" href="${esc(f.link)}" target="_blank" rel="noopener">Open <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+      </div>
+    </div>`;
+  }).join('');
 }
-
-/* ── Modal ── */
-function openModal() {
-  document.getElementById('overlay').style.display = 'flex';
-  document.getElementById('driveLink').value = '';
-  document.getElementById('fileName').value = '';
-  document.getElementById('fileType').value = 'sheet';
-  document.getElementById('fileSummary').value = '';
-  document.getElementById('fileKeywords').value = '';
-  document.getElementById('linkError').classList.remove('show');
-  document.getElementById('nameWarn').classList.remove('show');
-  document.getElementById('addBtn').disabled = false;
-  document.getElementById('addBtn').textContent = 'Add file';
-  setTimeout(() => document.getElementById('driveLink').focus(), 50);
-}
-function closeModal() { document.getElementById('overlay').style.display = 'none'; }
-function overlayClick(e) { if(e.target === document.getElementById('overlay')) closeModal(); }
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') { closeModal(); closeEditModal(); }
-});
-
-/* ── Auto-detect type from URL ── */
-document.getElementById('driveLink').addEventListener('input', function() {
-  const detected = detectType(this.value);
-  if(detected !== 'other') document.getElementById('fileType').value = detected;
-});
-
-/* ── Spin animation for loader ── */
-const style = document.createElement('style');
-style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
-document.head.appendChild(style);
 
 /* ── Init ── */
 fetchFiles();
